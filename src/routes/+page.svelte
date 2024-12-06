@@ -17,7 +17,7 @@
 		dropdowns = [...dropdowns, dropdowns.length + 1];
 		orblocks = [...orblocks, [orblocks.length + 1]];
 		perkDropdowns = [...perkDropdowns, [[['']]]]; // Add a new array for each new person
-		peopleText = [...peopleText, ['']]
+		peopleText = [...peopleText, ['']];
 	};
 
 	const addORblock = (i: number) => {
@@ -31,9 +31,22 @@
 		buildOutput();
 	};
 
-	const removePerk = (personIndex: number, perkIndex: number) => {
-		perkDropdowns[personIndex].splice(perkIndex, 1); // Remove the selected perk
-		perkDropdowns = [...perkDropdowns]; // Trigger reactivity
+	const removePerk = (i: number, r: number, j: number) => {
+		perkDropdowns[i][r] = [...perkDropdowns[i][r].slice(0, j), ...perkDropdowns[i][r].slice(j + 1)];
+		buildOutput();
+	};
+
+	const removeDropdown = (i: number) => {
+		dropdowns = [...dropdowns.slice(0, i), ...dropdowns.slice(i + 1)];
+		orblocks = [...orblocks.slice(0, i), ...orblocks.slice(i + 1)];
+		perkDropdowns = [...perkDropdowns.slice(0, i), ...perkDropdowns.slice(i + 1)];
+		peopleText = [...peopleText.slice(0, i), ...peopleText.slice(i + 1)];
+		buildOutput();
+	};
+
+	const removeORblock = (i: number, r: number) => {
+		orblocks[i] = [...orblocks[i].slice(0, r), ...orblocks[i].slice(r + 1)];
+		perkDropdowns[i] = [...perkDropdowns[i].slice(0, r), ...perkDropdowns[i].slice(r + 1)];
 		buildOutput();
 	};
 
@@ -58,7 +71,7 @@
 <div class="vh-100 d-flex justify-content-center font-monospace">
 	<div class="w-100">
 		<div class="bg-light p-1 text-center">
-			<h1 class="display-6 text-success">Cactus</h1>
+			<h1 class="display-6 text-success"><img src="/favicon.png" alt="Cactus logo." />Cactus</h1>
 		</div>
 		<form on:change={buildOutput}>
 			<div class="container-md section mx-auto p-4">
@@ -81,18 +94,40 @@
 				</div>
 				{#each dropdowns as dropdown, i (dropdown)}
 					<div class="row m-auto border p-2 rounded mb-3">
-						<div class="d-flex justify-content-between mb-2">
-							<button type="button" class="btn btn-primary btn-sm" on:click={() => addORblock(i)}
-								>Add OR Block</button
+						<div class="d-flex align-items-center gap-3 mb-2">
+							<button type="button" class="btn btn-primary btn-sm" on:click={() => addORblock(i)}>
+								Add OR Block
+							</button>
+							<div class="form-check m-0">
+								<input class="form-check-input" type="checkbox" id="or-not-{i}" />
+								<label class="form-check-label" for="or-not-{i}">Negative (!)</label>
+							</div>
+							<button
+								type="button"
+								class="btn text-danger ms-auto align-self-end"
+								style="font-size: x-large; padding: unset;"
+								on:click={() => removeDropdown(i)}
+							>
+								✖</button
 							>
 						</div>
 						{#each orblocks[i] as orblock, r (orblock)}
 							<div class="row m-auto border p-2 rounded mb-3">
-								<div class="d-flex justify-content-between mb-2">
+								<div class="d-flex align-items-center gap-3 mb-2">
 									<button
 										type="button"
 										class="btn btn-primary btn-sm"
-										on:click={() => addPerk(i, r)}>Add Perk</button
+										on:click={() => addPerk(i, r)}
+									>
+										Add Perk
+									</button>
+									<button
+										type="button"
+										class="btn text-danger ms-auto align-self-end"
+										style="font-size: x-large; padding: unset;"
+										on:click={() => removeORblock(i, r)}
+									>
+										✖</button
 									>
 								</div>
 								<div class="row m-auto justify-content-center">
@@ -100,19 +135,24 @@
 										<div class="d-flex align-items-center col-lg-6 col-md-12">
 											<select class="form-select w-auto m-2" bind:value={perkDropdowns[i][r][j]}>
 												{#each Object.values(perks).sort( (a, b) => a.name.localeCompare(b.name) ) as perk}
-													<option value={perk.name.replaceAll(' ', '_').replaceAll("'", '')}
-														>{perk.name}</option
-													>
+													<option value={perk.name.replaceAll(' ', '_').replaceAll("'", '')}>
+														{perk.name}
+													</option>
 												{/each}
 											</select>
 											<button
 												type="button"
 												class="btn text-danger"
 												style="font-size: x-large;"
-												on:click={() => removePerk(i, j)}
+												on:click={() => removePerk(i, r, j)}
 											>
 												✖
 											</button>
+	
+											<div class="form-check m-0">
+												<input class="form-check-input" type="checkbox" id="perk-not-{i}-{r}-{j}" />
+												<label class="form-check-label" for="perk-not-{i}-{r}-{j}">*</label>
+											</div>
 										</div>
 									{/each}
 								</div>
@@ -127,7 +167,6 @@
 					</div>
 				{/each}
 			</div>
-
 			<div class="container-md section mx-auto p-4">
 				<label for="text" class="form-label">Text</label>
 				<input
@@ -149,7 +188,8 @@
 				disabled
 				class="form-control scrollable-input"
 				placeholder="You will see your output here"
-				bind:value={output}></textarea>
+				bind:value={output}
+			></textarea>
 		</div>
 	</div>
 </div>

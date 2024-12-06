@@ -3,15 +3,15 @@
 
 	// i = number of dropdowns, r = number of OR blocks, j = number of perks
 
-	let dropdowns = [1];
-	let orblocks = [[1]];
-	let perkDropdowns = [[[['']]]]; // Array of arrays, each representing perk dropdowns for a person
-	let perks: object = {};
-	let chance: number = 0;
+	let dropdowns = $state([1]);
+	let orblocks = $state([[1]]);
+	let perkDropdowns = $state([[[['']]]]); // Array of arrays, each representing perk dropdowns for a person
+	let perks: object = $state({});
+	let chance: number = $state(0);
 	let people: string[] = [''];
-	let peopleText: string[][] = [['']];
-	let text: string = '';
-	let output: string = '';
+	let peopleText: string[][] = $state([['']]);
+	let text: string = $state('');
+	let output: string = $state('');
 
 	const addDropdown = () => {
 		dropdowns = [...dropdowns, dropdowns.length + 1];
@@ -73,7 +73,7 @@
 		<div class="bg-light p-1 text-center">
 			<h1 class="display-6 text-success"><img src="/favicon.png" alt="Cactus logo." />Cactus</h1>
 		</div>
-		<form on:change={buildOutput}>
+		<form onchange={buildOutput}>
 			<div class="container-md section mx-auto p-4">
 				<label for="chance" class="form-label">Chance</label>
 				<input
@@ -90,12 +90,12 @@
 			<div class="section mx-auto p-4">
 				<div class="d-flex justify-content-between align-items-center">
 					<label for="people" class="form-label">People</label>
-					<button type="button" class="btn" on:click={addDropdown}> + </button>
+					<button type="button" class="btn" onclick={addDropdown}> + </button>
 				</div>
 				{#each dropdowns as dropdown, i (dropdown)}
 					<div class="row m-auto border p-2 rounded mb-3">
 						<div class="d-flex align-items-center gap-3 mb-2">
-							<button type="button" class="btn btn-primary btn-sm" on:click={() => addORblock(i)}>
+							<button type="button" class="btn btn-primary btn-sm" onclick={() => addORblock(i)}>
 								Add OR Block
 							</button>
 							<div class="form-check m-0">
@@ -106,18 +106,18 @@
 								type="button"
 								class="btn text-danger ms-auto align-self-end"
 								style="font-size: x-large; padding: unset;"
-								on:click={() => removeDropdown(i)}
+								onclick={() => removeDropdown(i)}
 							>
 								✖</button
 							>
 						</div>
-						{#each orblocks[i] as orblock, r (orblock)}
+						{#each orblocks[i] as orblock, r (r)}
 							<div class="row m-auto border p-2 rounded mb-3">
 								<div class="d-flex align-items-center gap-3 mb-2">
 									<button
 										type="button"
 										class="btn btn-primary btn-sm"
-										on:click={() => addPerk(i, r)}
+										onclick={() => addPerk(i, r)}
 									>
 										Add Perk
 									</button>
@@ -125,7 +125,7 @@
 										type="button"
 										class="btn text-danger ms-auto align-self-end"
 										style="font-size: x-large; padding: unset;"
-										on:click={() => removeORblock(i, r)}
+										onclick={() => removeORblock(i, r)}
 									>
 										✖</button
 									>
@@ -144,7 +144,7 @@
 												type="button"
 												class="btn text-danger"
 												style="font-size: x-large;"
-												on:click={() => removePerk(i, r, j)}
+												onclick={() => removePerk(i, r, j)}
 											>
 												✖
 											</button>

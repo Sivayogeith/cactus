@@ -1,6 +1,11 @@
-<script>
+<script lang="ts">
 	import 'bootstrap/dist/css/bootstrap.css';
 	import scriptSrc from 'bootstrap/dist/js/bootstrap.bundle.js?url';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
 </script>
 
 <style>
@@ -14,4 +19,4 @@
 	<script src={scriptSrc}></script>
 </svelte:head>
 
-<slot></slot>
+{@render children?.()}

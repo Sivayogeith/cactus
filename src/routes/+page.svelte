@@ -1,11 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	// i = number of dropdowns, r = number of OR blocks, j = number of perks
-
-	let dropdowns = $state([1]);
-	let orblocks = $state([[1]]);
-	let perkDropdowns = $state([[[['']]]]); // Array of arrays, each representing perk dropdowns for a person
+	/**
+	 * @state personBlocks - Array tracking the number of person blocks
+	 * @state orBlocks - Array of OR blocks for each person
+	 * @state perkDropdowns - Nested array representing perk person blocks for each person
+	 * @state perks - Object storing perk data
+	 * @state chance - Chance value used in the game action
+	 * @state people - Array representing a person in the Murder Games Act.
+	 * @state peopleText - Array of text inputs associated with each person
+	 * @state text - Text input that may be included in the output string
+	 * @state output - Final output string formatted for the game action
+	 */
+	let personBlocks = $state([1]);
+	let orBlocks = $state([[1]]);
+	let perkDropdowns = $state([[[['']]]]);
 	let perks: object = $state({});
 	let chance: number = $state(0);
 	let people: string[] = [''];
@@ -13,55 +22,98 @@
 	let text: string = $state('');
 	let output: string = $state('');
 
-	const addDropdown = () => {
-		dropdowns = [...dropdowns, dropdowns.length + 1];
-		orblocks = [...orblocks, [orblocks.length + 1]];
-		perkDropdowns = [...perkDropdowns, [[['']]]]; // Add a new array for each new person
-		peopleText = [...peopleText, ['']];
+	/**
+	 * Adds a new person block, OR block, perk, and peopleText for a new person.
+	 * Rebuilds the output after adding the new elements.
+	 */
+	const addPersonBlock = () => {
+		personBlocks.push(personBlocks.length + 1);
+		orBlocks.push([orBlocks.length + 1]);
+		perkDropdowns.push([[['']]]);
+		peopleText.push(['']);
+		buildOutput();
 	};
 
+	/**
+	 * Adds a new OR block for the specified person.
+	 * Rebuilds the output after adding the new OR block.
+	 * @param {number} i - Index of the person to add the OR block for
+	 */
 	const addORblock = (i: number) => {
-		orblocks[i] = [...orblocks[i], orblocks.length + 1];
-		perkDropdowns[i].push([['']]); // Add a new array for each new person
+		orBlocks[i].push(orBlocks.length + 1);
+		perkDropdowns[i].push([['']]);
 		buildOutput();
 	};
 
+	/**
+	 * Adds a new perk to the specified OR block for a person.
+	 * Rebuilds the output after adding the new perk.
+	 * @param {number} i - Index of the person to add the perk for
+	 * @param {number} r - Index of the OR block to add the perk to
+	 */
 	const addPerk = (i: number, r: number) => {
-		perkDropdowns[i][r] = [...perkDropdowns[i][r], ['']];
+		perkDropdowns[i][r].push(['']);
 		buildOutput();
 	};
 
-	const removePerk = (i: number, r: number, j: number) => {
-		perkDropdowns[i][r] = [...perkDropdowns[i][r].slice(0, j), ...perkDropdowns[i][r].slice(j + 1)];
+	/**
+	 * Removes the specified person block, OR block, perk, and associated text entry for a person.
+	 * Rebuilds the output after removal.
+	 * @param {number} i - Index of the person block to remove
+	 */
+	const removePersonBlock = (i: number) => {
+		personBlocks.splice(i, 1);
+		orBlocks.splice(i, 1);
+		perkDropdowns.splice(i, 1);
+		peopleText.splice(i, 1);
 		buildOutput();
 	};
 
-	const removeDropdown = (i: number) => {
-		dropdowns = [...dropdowns.slice(0, i), ...dropdowns.slice(i + 1)];
-		orblocks = [...orblocks.slice(0, i), ...orblocks.slice(i + 1)];
-		perkDropdowns = [...perkDropdowns.slice(0, i), ...perkDropdowns.slice(i + 1)];
-		peopleText = [...peopleText.slice(0, i), ...peopleText.slice(i + 1)];
-		buildOutput();
-	};
-
+	/**
+	 * Removes the specified OR block for a specific person.
+	 * Rebuilds the output after removal.
+	 * @param {number} i - Index of the person to remove the OR block for
+	 * @param {number} r - Index of the OR block to remove
+	 */
 	const removeORblock = (i: number, r: number) => {
-		orblocks[i] = [...orblocks[i].slice(0, r), ...orblocks[i].slice(r + 1)];
-		perkDropdowns[i] = [...perkDropdowns[i].slice(0, r), ...perkDropdowns[i].slice(r + 1)];
+		orBlocks[i].splice(r, 1);
+		perkDropdowns[i].splice(r, 1);
 		buildOutput();
 	};
 
+	/**
+	 * Removes the specified perk from a specific OR block for a person.
+	 * Rebuilds the output after removal.
+	 * @param {number} i - Index of the person
+	 * @param {number} r - Index of the OR block
+	 * @param {number} j - Index of the perk to remove
+	 */
+	const removePerk = (i: number, r: number, j: number) => {
+		perkDropdowns[i][r].splice(j, 1);
+		buildOutput();
+	};
+
+	/**
+	 * Rebuilds the output string based on the current state of personBlocks, OR blocks, and perks.
+	 * The output is formatted and includes the chance, people data, and text.
+	 */
 	const buildOutput = () => {
 		people = perkDropdowns.map(
 			(person, i) =>
 				person
 					.map(
-						(orblock) => orblock.join('|') // Join perks in each OR block
+						(orblock) => orblock.join('|')
 					)
 					.join(' ') + (peopleText[i] ? ' ' + peopleText[i] : '')
 		);
+
 		output = `Game.act(${chance}, ${JSON.stringify(people)}, "${text}")`;
 	};
 
+	/**
+	 * Fetches the perk data from a JSON file when the component is mounted.
+	 * Stores the fetched perk data in the `perks` state variable.
+	 */
 	onMount(async () => {
 		const perkRes = await fetch('/perks.json');
 		perks = await perkRes.json();
@@ -90,9 +142,9 @@
 			<div class="section mx-auto p-4">
 				<div class="d-flex justify-content-between align-items-center">
 					<label for="people" class="form-label">People</label>
-					<button type="button" class="btn" onclick={addDropdown}> + </button>
+					<button type="button" class="btn" onclick={addPersonBlock}> + </button>
 				</div>
-				{#each dropdowns as dropdown, i (dropdown)}
+				{#each personBlocks as personBlock, i (i)}
 					<div class="row m-auto border p-2 rounded mb-3">
 						<div class="d-flex align-items-center gap-3 mb-2">
 							<button type="button" class="btn btn-primary btn-sm" onclick={() => addORblock(i)}>
@@ -106,12 +158,12 @@
 								type="button"
 								class="btn text-danger ms-auto align-self-end"
 								style="font-size: x-large; padding: unset;"
-								onclick={() => removeDropdown(i)}
+								onclick={() => removePersonBlock(i)}
 							>
 								✖</button
 							>
 						</div>
-						{#each orblocks[i] as orblock, r (r)}
+						{#each orBlocks[i] as orblock, r (r)}
 							<div class="row m-auto border p-2 rounded mb-3">
 								<div class="d-flex align-items-center gap-3 mb-2">
 									<button

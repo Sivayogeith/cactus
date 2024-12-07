@@ -4,7 +4,6 @@
 	 * console.log does not work here, use $inspect(variable) outside any function so that every time the variable is changed it will log it in the console
 	 */
 
-
 	import { onMount } from 'svelte';
 
 	/**
@@ -19,14 +18,14 @@
 	 * @state text - Text input that may be included in the output string
 	 * @state output - Final output string formatted for the game action
 	 */
-	let personBlocks: number[] = $state([1]);
-	let orBlocks: number[][] = $state([[1]]);
+	let personBlocks: number[] = $state([0]);
+	let orBlocks: boolean[][] = $state([[false]]);
 	let perkDropdowns: string[][][][] = $state([[[['']]]]);
 	let perks: object = $state({});
 	let chance: number = $state(0);
 	let people: string[] = [''];
 	let peopleText: string[][] = $state([['']]);
-	let perkNegative: boolean[][][][] = $state([[[[false]]]]);
+	let perkNegative: boolean[][][] = $state([[[false]]]);
 	let text: string = $state('');
 	let output: string = $state('');
 
@@ -35,10 +34,11 @@
 	 * Rebuilds the output after adding the new elements.
 	 */
 	const addPersonBlock = () => {
-		personBlocks.push(personBlocks.length + 1);
-		orBlocks.push([orBlocks.length + 1]);
+		personBlocks.push(0);
+		orBlocks.push([false]);
 		perkDropdowns.push([[['']]]);
 		peopleText.push(['']);
+		perkNegative.push([[false]]);
 		buildOutput();
 	};
 
@@ -48,8 +48,9 @@
 	 * @param {number} i - Index of the person to add the OR block for
 	 */
 	const addORblock = (i: number) => {
-		orBlocks[i].push(orBlocks.length + 1);
+		orBlocks[i].push(false);
 		perkDropdowns[i].push([['']]);
+		perkNegative[i].push([false]);
 		buildOutput();
 	};
 
@@ -61,9 +62,10 @@
 	 */
 	const addPerk = (i: number, r: number) => {
 		perkDropdowns[i][r].push(['']);
+		perkNegative[i][r].push(false);
 		buildOutput();
 	};
-	
+
 	/**
 	 * Removes the specified person block, OR block, perk, and associated text entry for a person.
 	 * Rebuilds the output after removal.
@@ -74,6 +76,7 @@
 		orBlocks.splice(i, 1);
 		perkDropdowns.splice(i, 1);
 		peopleText.splice(i, 1);
+		perkNegative.splice(i, 1);
 		buildOutput();
 	};
 
@@ -86,6 +89,7 @@
 	const removeORblock = (i: number, r: number) => {
 		orBlocks[i].splice(r, 1);
 		perkDropdowns[i].splice(r, 1);
+		perkNegative[i].splice(r, 1);
 		buildOutput();
 	};
 
@@ -98,6 +102,7 @@
 	 */
 	const removePerk = (i: number, r: number, j: number) => {
 		perkDropdowns[i][r].splice(j, 1);
+		perkNegative[i][r].splice(j, 1);
 		buildOutput();
 	};
 
@@ -106,16 +111,17 @@
 	 * The output is formatted and includes the chance, people data, and text.
 	 */
 	const buildOutput = () => {
-		people = perkDropdowns.map(
-			(person, i) =>
-				person
-					.map(
-						(orblock) => orblock.join('|')
-					)
-					.join(' ') + (peopleText[i].length ? ' ' + peopleText[i] : '')
+		people = perkDropdowns.map((person, i) =>
+			person
+				.map((orblock, r) => {
+					let prefix = orBlocks[i][r] ? '!' : '';
+					return prefix + perkNegative[i][r].map((pn, j) => (pn ? '*' + orblock[j] : orblock[j])).join('|') +
+						(peopleText[i][r] ? ' ' + peopleText[i][r] : '');
+				})
+				.join(' ')
 		);
 
-		output = `Game.act(${chance}, ${JSON.stringify(people)}, "${text}")`;
+		output = `new Game.act(${chance}, ${JSON.stringify(people)}, "${text}")`;
 	};
 
 	/**
@@ -158,10 +164,6 @@
 							<button type="button" class="btn btn-primary btn-sm" onclick={() => addORblock(i)}>
 								Add OR Block
 							</button>
-							<div class="form-check m-0">
-								<input class="form-check-input" type="checkbox" id="or-not-{i}" />
-								<label class="form-check-label" for="or-not-{i}">Negative (!)</label>
-							</div>
 							<button
 								type="button"
 								class="btn text-danger ms-auto align-self-end"
@@ -181,6 +183,15 @@
 									>
 										Add Perk
 									</button>
+									<div class="form-check m-0">
+										<input
+											class="form-check-input"
+											type="checkbox"
+											id="or-not-{i}"
+											bind:checked={orBlocks[i][r]}
+										/>
+										<label class="form-check-label" for="or-not-{i}-{r}">Negative (!)</label>
+									</div>
 									<button
 										type="button"
 										class="btn text-danger ms-auto align-self-end"
@@ -195,7 +206,7 @@
 										<div class="d-flex align-items-center col-lg-6 col-md-12">
 											<select class="form-select w-auto m-2" bind:value={perkDropdowns[i][r][j]}>
 												{#each Object.values(perks).sort( (a, b) => a.name.localeCompare(b.name) ) as perk}
-													<option value={perk.name.replaceAll(' ', '_').replaceAll("'", '')}>
+													<option value={perk.name.replaceAll(' ', '_')}>
 														{perk.name}
 													</option>
 												{/each}
@@ -208,9 +219,14 @@
 											>
 												✖
 											</button>
-	
+
 											<div class="form-check m-0">
-												<input class="form-check-input" type="checkbox" id="perk-not-{i}-{r}-{j}"/>
+												<input
+													class="form-check-input"
+													type="checkbox"
+													id="perk-not-{i}-{r}-{j}"
+													bind:checked={perkNegative[i][r][j]}
+												/>
 												<label class="form-check-label" for="perk-not-{i}-{r}-{j}">*</label>
 											</div>
 										</div>

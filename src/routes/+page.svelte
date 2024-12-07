@@ -115,8 +115,11 @@
 			person
 				.map((orblock, r) => {
 					let prefix = orBlocks[i][r] ? '!' : '';
-					return prefix + perkNegative[i][r].map((pn, j) => (pn ? '*' + orblock[j] : orblock[j])).join('|') +
-						(peopleText[i][r] ? ' ' + peopleText[i][r] : '');
+					return (
+						prefix +
+						perkNegative[i][r].map((pn, j) => (pn ? '*' + orblock[j] : orblock[j])).join('|') +
+						(peopleText[i][r] ? ' ' + peopleText[i][r] : '')
+					);
 				})
 				.join(' ')
 		);
@@ -136,21 +139,38 @@
 
 <div class="vh-100 d-flex justify-content-center font-monospace">
 	<div class="w-100">
-		<div class="bg-light p-1 text-center">
-			<h1 class="display-6 text-success"><img src="/favicon.png" alt="Cactus logo." />Cactus</h1>
-		</div>
+		<nav class="bg-light p-1 text-center d-flex navbar">
+			<h1 class="display-8 text-success ms-2 d-flex align-items-center">
+				<img src="/favicon.png" alt="Cactus logo." height="45" class="me-2" />Cactus
+			</h1>
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+				<li class="nav-item">
+					<a class="nav-link active ps-3" aria-current="page" href="#credits">credits</a>
+				</li>
+			</ul>
+			<p class="ms-auto align-self-end me-4">
+				<a
+					href="https://github.com/Sivayogeith"
+					target="_blank"
+					style="text-decoration: none; color: black">by thecodingsage</a
+				>
+			</p>
+		</nav>
 		<form onchange={buildOutput}>
 			<div class="container-md section mx-auto p-4">
 				<label for="chance" class="form-label">Chance</label>
-				<input
-					type="number"
-					id="chance"
-					name="chance"
-					class="form-control"
-					placeholder="Enter your chance"
-					max="1"
-					bind:value={chance}
-				/>
+				<div class="input-group">
+					<input
+						type="number"
+						id="chance"
+						name="chance"
+						class="form-control"
+						placeholder="Enter your chance"
+						max="1"
+						bind:value={chance}
+					/>
+					<span class="input-group-text">%</span>
+				</div>
 			</div>
 
 			<div class="section mx-auto p-4">
@@ -159,13 +179,13 @@
 					<button type="button" class="btn" onclick={addPersonBlock}> + </button>
 				</div>
 				{#each personBlocks as personBlock, i (i)}
-				<div class="row m-auto border p-2 rounded mb-3">
-					<div class="d-flex align-items-center gap-3 mb-2">
-						<button type="button" class="btn btn-primary btn-sm" onclick={() => addORblock(i)}>
-							Add OR Block
-						</button>
-						<span>[{personBlock}]</span>
-						<button
+					<div class="row m-auto border p-2 rounded mb-3">
+						<div class="d-flex align-items-center gap-3 mb-2">
+							<button type="button" class="btn btn-primary btn-sm" onclick={() => addORblock(i)}>
+								Add OR Block
+							</button>
+							<span>[{personBlock}]</span>
+							<button
 								type="button"
 								class="btn text-danger ms-auto align-self-end"
 								style="font-size: x-large; padding: unset;"
@@ -205,7 +225,7 @@
 								<div class="row m-auto justify-content-center">
 									{#each perkDropdowns[i][r] as perkDropdown, j (j)}
 										<div class="d-flex align-items-center col-lg-6 col-md-12">
-											<select class="form-select w-auto m-2" bind:value={perkDropdowns[i][r][j]}>
+											<select class="form-select m-2" bind:value={perkDropdowns[i][r][j]}>
 												{#each Object.values(perks).sort( (a, b) => a.name.localeCompare(b.name) ) as perk}
 													<option value={perk.name.replaceAll(' ', '_')}>
 														{perk.name}
@@ -268,12 +288,29 @@
 				bind:value={output}
 			></textarea>
 		</div>
+		<footer class="w-100 text-center mb-1">
+			<p id="credits">Credits: CursedSliver, leoguy and the group chat in discord.</p>
+		</footer>
 	</div>
 </div>
 
 <style>
+	footer {
+		background-color: #ededed;
+	}
 	.section {
 		width: 50%;
+	}
+
+	.display-8 {
+		font-size: clamp(25px, calc(1px + 1.5vw), 30px);
+		font-weight: 300;
+		line-height: 1.2;
+		padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+	}
+
+	.nav-link {
+		font-size: clamp(12px, calc(10px + 1.5vw), 18px);
 	}
 	@media (max-width: 1500px) {
 		.section {

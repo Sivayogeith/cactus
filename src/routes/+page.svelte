@@ -5,7 +5,7 @@
 	 */
 
 	import { onMount } from 'svelte';
-
+	import { copy } from 'svelte-copy';
 	/**
 	 * @state personBlocks - Array tracking the number of person blocks
 	 * @state orBlocks - Array of OR blocks for each person
@@ -279,14 +279,17 @@
 
 		<div class="container-md section mx-auto p-4">
 			<label for="output" class="form-label">Output</label>
-			<textarea
-				id="output"
-				name="output"
-				disabled
-				class="form-control scrollable-input"
-				placeholder="You will see your output here"
-				bind:value={output}
-			></textarea>
+			<div class="input-group">
+				<textarea
+					id="output"
+					name="output"
+					disabled
+					class="form-control scrollable-input"
+					placeholder="You will see your output here"
+					bind:value={output}
+				></textarea>
+				<button class="btn active" use:copy={output}>Copy</button>
+			</div>
 		</div>
 		<footer class="w-100 text-center mb-1">
 			<p id="credits">Credits: CursedSliver, leoguy and the group chat in discord.</p>

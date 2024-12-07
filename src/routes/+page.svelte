@@ -1,4 +1,10 @@
 <script lang="ts">
+	/**
+	 * Developer Notes
+	 * console.log does not work here, use $inspect(variable) outside any function so that every time the variable is changed it will log it in the console
+	 */
+
+
 	import { onMount } from 'svelte';
 
 	/**
@@ -8,17 +14,19 @@
 	 * @state perks - Object storing perk data
 	 * @state chance - Chance value used in the game action
 	 * @state people - Array representing a person in the Murder Games Act.
-	 * @state peopleText - Array of text inputs associated with each person
+	 * @state peopleText - Array of text inputs associated with each OR block
+	 * @state perkNegative - Array of each perk
 	 * @state text - Text input that may be included in the output string
 	 * @state output - Final output string formatted for the game action
 	 */
-	let personBlocks = $state([1]);
-	let orBlocks = $state([[1]]);
-	let perkDropdowns = $state([[[['']]]]);
+	let personBlocks: number[] = $state([1]);
+	let orBlocks: number[][] = $state([[1]]);
+	let perkDropdowns: string[][][][] = $state([[[['']]]]);
 	let perks: object = $state({});
 	let chance: number = $state(0);
 	let people: string[] = [''];
 	let peopleText: string[][] = $state([['']]);
+	let perkNegative: boolean[][][][] = $state([[[[false]]]]);
 	let text: string = $state('');
 	let output: string = $state('');
 
@@ -55,7 +63,7 @@
 		perkDropdowns[i][r].push(['']);
 		buildOutput();
 	};
-
+	
 	/**
 	 * Removes the specified person block, OR block, perk, and associated text entry for a person.
 	 * Rebuilds the output after removal.
@@ -104,7 +112,7 @@
 					.map(
 						(orblock) => orblock.join('|')
 					)
-					.join(' ') + (peopleText[i] ? ' ' + peopleText[i] : '')
+					.join(' ') + (peopleText[i].length ? ' ' + peopleText[i] : '')
 		);
 
 		output = `Game.act(${chance}, ${JSON.stringify(people)}, "${text}")`;
@@ -202,7 +210,7 @@
 											</button>
 	
 											<div class="form-check m-0">
-												<input class="form-check-input" type="checkbox" id="perk-not-{i}-{r}-{j}" />
+												<input class="form-check-input" type="checkbox" id="perk-not-{i}-{r}-{j}"/>
 												<label class="form-check-label" for="perk-not-{i}-{r}-{j}">*</label>
 											</div>
 										</div>

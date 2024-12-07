@@ -18,7 +18,7 @@
 	 * @state text - Text input that may be included in the output string
 	 * @state output - Final output string formatted for the game action
 	 */
-	let personBlocks: number[] = $state([0]);
+	let personBlocks: number[] = $state([1]);
 	let orBlocks: boolean[][] = $state([[false]]);
 	let perkDropdowns: string[][][][] = $state([[[['']]]]);
 	let perks: object = $state({});
@@ -34,7 +34,7 @@
 	 * Rebuilds the output after adding the new elements.
 	 */
 	const addPersonBlock = () => {
-		personBlocks.push(0);
+		personBlocks.push(personBlocks.length + 1);
 		orBlocks.push([false]);
 		perkDropdowns.push([[['']]]);
 		peopleText.push(['']);
@@ -159,12 +159,13 @@
 					<button type="button" class="btn" onclick={addPersonBlock}> + </button>
 				</div>
 				{#each personBlocks as personBlock, i (i)}
-					<div class="row m-auto border p-2 rounded mb-3">
-						<div class="d-flex align-items-center gap-3 mb-2">
-							<button type="button" class="btn btn-primary btn-sm" onclick={() => addORblock(i)}>
-								Add OR Block
-							</button>
-							<button
+				<div class="row m-auto border p-2 rounded mb-3">
+					<div class="d-flex align-items-center gap-3 mb-2">
+						<button type="button" class="btn btn-primary btn-sm" onclick={() => addORblock(i)}>
+							Add OR Block
+						</button>
+						<span>[{personBlock}]</span>
+						<button
 								type="button"
 								class="btn text-danger ms-auto align-self-end"
 								style="font-size: x-large; padding: unset;"

@@ -3,20 +3,21 @@
 	 * Developer Notes
 	 * console.log does not work here, use $inspect(variable) outside any function so that every time the variable is changed it will log it in the console
 	 */
+	
 
 	import { onMount } from 'svelte';
 	import { copy } from 'svelte-copy';
 	/**
-	 * @state personBlocks - Array tracking the number of person blocks
-	 * @state orBlocks - Array of OR blocks for each person
-	 * @state perkDropdowns - Nested array representing perk person blocks for each person
-	 * @state perks - Object storing perk data
-	 * @state chance - Chance value used in the game action
+	 * @state personBlocks - Array tracking the number of person blocks.
+	 * @state orBlocks - Array of OR blocks for each person.
+	 * @state perkDropdowns - Nested array representing perk person blocks for each person.
+	 * @state perks - Object storing perk data.
+	 * @state chance - Chance value used in the game action.
 	 * @state people - Array representing a person in the Murder Games Act.
-	 * @state peopleText - Array of text inputs associated with each OR block
-	 * @state perkNegative - Array of each perk
-	 * @state text - Text input that may be included in the output string
-	 * @state output - Final output string formatted for the game action
+	 * @state peopleText - Array of text inputs associated with each OR block.
+	 * @state perkNegative - Tracks whether perks have a negative effect.
+	 * @state text - Text input that may be included in the output string.
+	 * @state output - Final output string formatted for the game action.
 	 */
 	let personBlocks: number[] = $state([1]);
 	let orBlocks: boolean[][] = $state([[false]]);
@@ -26,11 +27,12 @@
 	let people: string[] = [''];
 	let peopleText: string[][] = $state([['']]);
 	let perkNegative: boolean[][][] = $state([[[false]]]);
+	let perkChance: number[][][] = $state([[[1]]]);
 	let text: string = $state('');
 	let output: string = $state('');
 
 	/**
-	 * Adds a new person block, OR block, perk, and peopleText for a new person.
+	 * Adds a new person block, OR block, perk, peopleText, perkNegative and perkChance for a new person.
 	 * Rebuilds the output after adding the new elements.
 	 */
 	const addPersonBlock = () => {
@@ -39,6 +41,7 @@
 		perkDropdowns.push([[['']]]);
 		peopleText.push(['']);
 		perkNegative.push([[false]]);
+		perkChance.push([[1]]);
 		buildOutput();
 	};
 
@@ -51,6 +54,7 @@
 		orBlocks[i].push(false);
 		perkDropdowns[i].push([['']]);
 		perkNegative[i].push([false]);
+		perkChance[i].push([1]);
 		buildOutput();
 	};
 
@@ -63,11 +67,12 @@
 	const addPerk = (i: number, r: number) => {
 		perkDropdowns[i][r].push(['']);
 		perkNegative[i][r].push(false);
+		perkChance[i][r].push(1);
 		buildOutput();
 	};
 
 	/**
-	 * Removes the specified person block, OR block, perk, and associated text entry for a person.
+	 * Removes the specified person block, OR block, perk, peopleText, perkNegative and perkChance for a person.
 	 * Rebuilds the output after removal.
 	 * @param {number} i - Index of the person block to remove
 	 */
@@ -77,6 +82,7 @@
 		perkDropdowns.splice(i, 1);
 		peopleText.splice(i, 1);
 		perkNegative.splice(i, 1);
+		perkChance.splice(i, 1);
 		buildOutput();
 	};
 
@@ -90,6 +96,7 @@
 		orBlocks[i].splice(r, 1);
 		perkDropdowns[i].splice(r, 1);
 		perkNegative[i].splice(r, 1);
+		perkChance[i].splice(r, 1);
 		buildOutput();
 	};
 
@@ -103,6 +110,7 @@
 	const removePerk = (i: number, r: number, j: number) => {
 		perkDropdowns[i][r].splice(j, 1);
 		perkNegative[i][r].splice(j, 1);
+		perkChance[i][r].splice(j, 1);
 		buildOutput();
 	};
 
@@ -117,14 +125,20 @@
 					let prefix = orBlocks[i][r] ? '!' : '';
 					return (
 						prefix +
-						perkNegative[i][r].map((pn, j) => (pn ? '*' + orblock[j] : orblock[j])).join('|') +
+						perkNegative[i][r]
+							.map((pn, j) =>
+								pn
+									? '*' + orblock[j] + '%' + perkChance[i][r][j]
+									: orblock[j] + '%' + perkChance[i][r][j]
+							)
+							.join('|') +
 						(peopleText[i][r] ? ' ' + peopleText[i][r] : '')
 					);
 				})
 				.join(' ')
 		);
 
-		output = `new Game.act(${chance}, ${JSON.stringify(people)}, "${text}")`;
+		output = `new G.act(${chance}, ${JSON.stringify(people)}, "${text}")`;
 	};
 
 	/**
@@ -159,18 +173,16 @@
 		<form onchange={buildOutput}>
 			<div class="container-md section mx-auto p-4">
 				<label for="chance" class="form-label">Chance</label>
-				<div class="input-group">
-					<input
-						type="number"
-						id="chance"
-						name="chance"
-						class="form-control"
-						placeholder="Enter your chance"
-						max="1"
-						bind:value={chance}
-					/>
-					<span class="input-group-text">%</span>
-				</div>
+
+				<input
+					type="number"
+					id="chance"
+					name="chance"
+					class="form-control"
+					placeholder="Enter your chance"
+					max="1"
+					bind:value={chance}
+				/>
 			</div>
 
 			<div class="section mx-auto p-4">
@@ -232,6 +244,11 @@
 													</option>
 												{/each}
 											</select>
+											<input
+												class="form-control"
+												style="width: 30%"
+												bind:value={perkChance[i][r][j]}
+											/>
 											<button
 												type="button"
 												class="btn text-danger"

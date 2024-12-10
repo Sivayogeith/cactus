@@ -23,7 +23,7 @@
 	let orBlocks: boolean[][] = $state([[false]]);
 	let perkDropdowns: string[][][][] = $state([[[['']]]]);
 	let perks: object = $state({});
-	let chance: number = $state(0);
+	let chance: number = $state(1);
 	let people: string[] = [''];
 	let peopleText: string[][] = $state([['']]);
 	let perkNegative: boolean[][][] = $state([[[false]]]);
@@ -138,7 +138,7 @@
 				.join(' ')
 		);
 
-		output = `new G.act(${chance}, ${JSON.stringify(people)}, "${text}")`;
+		output = `new G.act(${chance}*importGlobMult, ${JSON.stringify(people)}, "${text}")`;
 	};
 
 	/**

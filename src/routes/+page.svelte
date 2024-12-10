@@ -3,7 +3,6 @@
 	 * Developer Notes
 	 * console.log does not work here, use $inspect(variable) outside any function so that every time the variable is changed it will log it in the console
 	 */
-	
 
 	import { onMount } from 'svelte';
 	import { copy } from 'svelte-copy';
@@ -238,11 +237,27 @@
 									{#each perkDropdowns[i][r] as perkDropdown, j (j)}
 										<div class="d-flex align-items-center col-lg-6 col-md-12">
 											<select class="form-select m-2" bind:value={perkDropdowns[i][r][j]}>
-												{#each Object.values(perks).sort( (a, b) => a.name.localeCompare(b.name) ) as perk}
-													<option value={perk.name.replaceAll(' ', '_')}>
-														{perk.name}
-													</option>
-												{/each}
+												<optgroup label="Traits">
+													{#each Object.values(perks).filter((p) => p.type == 'trait') as perk}
+														<option value={perk.name.replaceAll(' ', '_')}>
+															{perk.name}
+														</option>
+													{/each}
+												</optgroup>
+												<optgroup label="Statuses">
+													{#each Object.values(perks).filter((p) => p.type == 'status') as perk}
+														<option value={perk.name.replaceAll(' ', '_')}>
+															{perk.name}
+														</option>
+													{/each}</optgroup
+												>
+												<optgroup label="Items">
+													{#each Object.values(perks).filter((p) => p.type == 'item') as perk}
+														<option value={perk.name.replaceAll(' ', '_')}>
+															{perk.name}
+														</option>
+													{/each}
+												</optgroup>
 											</select>
 											<input
 												class="form-control"
